@@ -30,7 +30,6 @@ export default class LinksScreen extends React.Component {
     this.loading(prevState);
   }
 
-
   goCamera = () => {
     this.props.navigation.navigate('Camera');
   }
