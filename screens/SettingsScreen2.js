@@ -55,24 +55,35 @@ export default class SettingsScreen extends React.Component {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <Card style={{ flexDirection: 'column' }}>
-          <View style={{ flex: 1 }}>
-            <Icon.Ionicons
-              size={50}
-              name={
-                Platform.OS === 'ios'
-                  ? 'ios-contact'
-                  : 'md-contact'
-              }
-              color={"#000"}
-              style={{ marginBottom: 15, marginLeft: 15 }} />
-            <Text style={{ marginBottom: 10 }}>
-              {patient.full_name}
-            </Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity onPress={this._signOutAsync} style={{ borderWidth: 1, flex: 1 }}>
-              <Text>Logout</Text>
-            </TouchableOpacity>
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <View style={{ flex: 3, borderWidth: 1, borderRadius: 10, marginRight: 10, paddingTop: 10, backgroundColor: Colors.tintColor }}>
+              <Icon.Ionicons
+                size={50}
+                name={
+                  Platform.OS === 'ios'
+                    ? 'ios-contact'
+                    : 'md-contact'
+                }
+                color={"#fff"}
+                style={{ textAlign: 'center' }} />
+              <Text style={{ marginBottom: 10, textAlign: 'center', color: '#fff' }}>
+                {patient.full_name}
+              </Text>
+            </View>
+            <View style={{ flex: 1, flexDirection: 'column', alignSelf: 'flex-end' }}>
+              <TouchableOpacity onPress={this._signOutAsync} style={{ borderWidth: 1, flex: 1, borderRadius: 10, padding: 10, width: 80, backgroundColor: '#dc3939' }}>
+                <Icon.Ionicons
+                  size={50}
+                  name={
+                    Platform.OS === 'ios'
+                      ? 'ios-power'
+                      : 'md-power'
+                  }
+                  color={"#000"}
+                  style={{ textAlign: 'center' }} />
+                <Text style={{ textAlign: 'center' }}>Logout</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Card>
         <ScrollView style={styles.container}>
