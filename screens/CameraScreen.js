@@ -1,7 +1,9 @@
 import React from 'react';
-import { Text, View, TouchableOpacity, Platform, StyleSheet, AsyncStorage } from 'react-native';
+import { Text, View, TouchableOpacity, Platform, StyleSheet, AsyncStorage, Alert, ActivityIndicator } from 'react-native';
 import { FaceDetector, Camera, Permissions, Icon, Constants } from 'expo';
 import axios from 'axios';
+import StyledText from '../components/StyledText';
+import Colors from '../constants/Colors';
 
 export default class CameraScreen extends React.Component {
   state = {
@@ -9,6 +11,7 @@ export default class CameraScreen extends React.Component {
     type: Camera.Constants.Type.front,
     processing: false,
     recording: false,
+    loading: false,
     faces: []
   };
 
@@ -27,7 +30,14 @@ export default class CameraScreen extends React.Component {
       const { uri, codec = "mp4" } = await this.camera.recordAsync({
         maxDuration: 3
       });
-      this.setState({ recording: false, processing: true });
+      Alert.alert('Notifications',
+        `Your video is processing...`,
+        [
+          { text: 'Ok' }
+        ],
+        { cancelable: true }
+      )
+      this.setState({ recording: false, processing: true, loading: true });
       const type = `video/${codec}`;
 
       const data = new FormData();
@@ -36,18 +46,27 @@ export default class CameraScreen extends React.Component {
         type,
         uri
       });
-      axios.post('http://172.20.10.5:5000/', data)
+      axios.post('http://1a98c01b.eu.ngrok.io', data)
         .then(async (resp) => {
           const patientData = await AsyncStorage.getItem('patient');
           const patient = JSON.parse(patientData);
-          console.log({ patient_id: patient.id, scale: resp.data });
           axios.post('https://painpoint.herokuapp.com/api/add-pain', { patient_id: patient.id, scale: resp.data })
+            .then((resp1) => {
+              Alert.alert('Pain scale',
+                `Patients pain scale is ${resp.data}!`,
+                [
+                  { text: 'Therapy', onPress: () => this.props.navigation.navigate('Therapy') },
+                  { text: 'Chart', onPress: () => this.props.navigation.navigate('Chart') },
+                ],
+                { cancelable: true }
+              )
+            })
         })
         .catch((err) => {
           console.log(err);
         })
 
-      this.setState({ processing: false });
+      this.setState({ processing: false, loading: false });
     }
   };
 
@@ -56,7 +75,6 @@ export default class CameraScreen extends React.Component {
       {this.state.faces.map(this.renderFace)}
     </View>
   renderFace(obj) {
-    console.log(obj);
     return (
       <View
         key={obj.faceID}
@@ -77,17 +95,10 @@ export default class CameraScreen extends React.Component {
     );
   }
 
-  // handleFacesDetected = ({ faces }) => {
-  //   if (faces.length > 0) {
-  //     this.setState({ faces });
-  //   }
-  // };
-
   handleFacesDetected = (obj) => {
     if (obj.faces.length > 0) {
       this.setState({ faces: obj.faces });
     }
-    console.log(obj)
   };
 
   render() {
@@ -95,7 +106,7 @@ export default class CameraScreen extends React.Component {
     if (hasCameraPermission === null) {
       return <View />;
     } else if (hasCameraPermission === false) {
-      return <Text>No access to camera</Text>;
+      return <StyledText>No access to camera</StyledText>;
     } else {
       return (
         <View style={{ flex: 1 }}>
@@ -116,6 +127,11 @@ export default class CameraScreen extends React.Component {
                 backgroundColor: 'transparent',
                 flexDirection: 'row',
               }}>
+              {this.state.loading &&
+                <View style={styles.loading}>
+                  <ActivityIndicator size='large' style={{ alignSelf: 'center', justifyContent: 'center' }} color={'red'} />
+                </View>
+              }
               <TouchableOpacity
                 style={{
                   flex: 1,
@@ -123,6 +139,11 @@ export default class CameraScreen extends React.Component {
                   alignItems: 'center'
                 }}
                 onPress={this.record}>
+                {this.state.loading &&
+                  <View style={styles.loading}>
+                    <ActivityIndicator size='large' />
+                  </View>
+                }
                 <Icon.Ionicons
                   size={32}
                   name={
@@ -214,5 +235,17 @@ const styles = StyleSheet.create({
   },
   textcolor: {
     color: '#008080',
+  },
+  loading: {
+    position: 'absolute',
+    flex: 1,
+    width: 50,
+    height: 50,
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });

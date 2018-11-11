@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Button } from 'react-native-elements';
 import axios from 'axios';
+import Colors from '../constants/Colors';
 
 export default class AddPatientScreen extends React.Component {
     constructor(props) {
@@ -51,7 +52,9 @@ export default class AddPatientScreen extends React.Component {
                 const userData = await AsyncStorage.getItem('user');
                 const user = JSON.parse(userData);
                 axios.post('https://painpoint.herokuapp.com/api/assign-patient', { patient_id: resp.data.patient.id, user_id: user.id })
-                    .then((resp) => {
+                    .then(async (resp) => {
+                        console.log(resp)
+                        await AsyncStorage.setItem('patient', JSON.stringify( resp.data.patient));
                         this.props.navigation.navigate('Home');
                     })
                     .catch((err) => {
@@ -63,13 +66,14 @@ export default class AddPatientScreen extends React.Component {
         const userData = await AsyncStorage.getItem('user');
         const user = JSON.parse(userData);
         axios.post('https://painpoint.herokuapp.com/api/assign-patient', { patient_id: patient.id, user_id: user.id })
-            .then((resp) => {
-
+            .then(async (resp) => {
+                console.log(resp)
+                await AsyncStorage.setItem('patient', JSON.stringify(patient));
+                this.props.navigation.navigate('Home');
             })
             .catch((err) => {
-
+                console.log(err);
             })
-        this.props.navigation.navigate('Home');
     }
     setName = (full_name) => {
         this.setState({ full_name })
@@ -80,13 +84,15 @@ export default class AddPatientScreen extends React.Component {
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
                 <View style={styles.container}>
                     <Image source={require('../assets/images/icon.png')} style={styles.logo} />
-                    <TextInput
-                        style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-                        onChangeText={this.setName}
-                        value={this.state.name}
-                        placeholder={"Full name"}
-                    />
-                    <Button title="Add" onPress={this.addPatient} />
+                    <View style={{ marginLeft: 20, marginRight: 20 }}>
+                        <TextInput
+                            style={{ height: 40, borderColor: 'gray', borderBottomWidth: 1, marginBottom: 10 }}
+                            onChangeText={this.setName}
+                            value={this.state.name}
+                            placeholder={"Full name"}
+                        />
+                    </View>
+                    <Button title="Add patient" large backgroundColor={Colors.tintColor} style={{ marginTop: 15 }} borderRadius={30} onPress={this.addPatient} />
                 </View>
                 <List style={{ flex: 1, width: '100%' }}>
                     {

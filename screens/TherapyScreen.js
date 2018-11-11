@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, ListItem } from 'react-native-elements'
+import { List, ListItem, SearchBar } from 'react-native-elements'
 import {
   AppRegistry,
   ImageBackground,
@@ -10,7 +10,8 @@ import {
   TextInput,
   AsyncStorage,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
+  Alert
 } from 'react-native';
 import { Button } from 'react-native-elements';
 import axios from 'axios';
@@ -25,6 +26,9 @@ export default class TherapyScreen extends React.Component {
     };
     this.timeout = null;
   }
+  static navigationOptions = {
+    title: 'Add therapy',
+  };
   componentDidMount = () => {
     axios.get('https://painpoint.herokuapp.com/api/medicines')
       .then((resp) => {
@@ -92,26 +96,33 @@ export default class TherapyScreen extends React.Component {
     console.log({ patient_id: patient.id, medicine_id: drug.id })
     axios.post('https://painpoint.herokuapp.com/api/add-therapy', { patient_id: patient.id, medicine_id: drug.id })
       .then((resp) => {
-
+        Alert.alert('Therapy',
+          `Successfully taken`,
+          [
+            { text: 'OK' }
+          ],
+          { cancelable: false }
+        );
+        this.props.navigation.navigate('Home');
       })
       .catch((err) => {
 
       })
-    this.props.navigation.navigate('Home');
   }
   render() {
     const list = this.state.drugList;
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.container}>
-          <Image source={require('../assets/images/icon.png')} style={styles.logo} />
-          <TextInput
-            style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-            onChangeText={this.search}
-            value={this.state.name}
-            placeholder={"Full name"}
-          />
         </View>
+        <SearchBar
+          round
+          lightTheme
+          containerStyle={{ backgroundColor: '#fff', borderWidth: 0 }}
+          inputStyle={{ backgroundColor: '#fff' }}
+          onChangeText={this.search}
+          value={this.state.name}
+          placeholder={"Medicine search"} />
         <List style={{ flex: 1, width: '100%' }}>
           {
             list.map((item) => (

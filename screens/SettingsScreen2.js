@@ -24,21 +24,20 @@ export default class SettingsScreen extends React.Component {
     }
   }
   static navigationOptions = {
-    title: 'Profile',
+    title: 'Profile - Medic',
   };
 
   componentDidMount = async () => {
     const patientData = await AsyncStorage.getItem('patient');
     const patient = JSON.parse(patientData);
     this.setState({ patient });
-    axios.get('https://painpoint.herokuapp.com/api/pain-history?patient_id=' + patient.id)
+    axios.get('https://painpoint.herokuapp.com/api/therapy-history?patient_id=' + patient.id)
       .then((resp) => {
         let pains = [];
-        for (let i = 0; i < resp.data["pain-history"].length; i++) {
-          const element = resp.data["pain-history"][i];
+        for (let i = 0; i < resp.data["therapy-history"].length; i++) {
+          const element = resp.data["therapy-history"][i];
           pains.push({
             ...element,
-            title: element.created_at + ' Pain level: ' + element.scale,
             icon: 'face'
           })
         }
@@ -79,7 +78,7 @@ export default class SettingsScreen extends React.Component {
         <ScrollView style={styles.container}>
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings')}>
-              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor, backgroundColor: Colors.tintColor }}>
+              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor }}>
                 <Icon.Ionicons
                   size={32}
                   name={
@@ -87,9 +86,9 @@ export default class SettingsScreen extends React.Component {
                       ? 'ios-list'
                       : 'md-list'
                   }
-                  color={'#fff'}
+                  color={Colors.tintColor}
                   style={{ alignSelf: 'center' }} />
-                <StyledText style={{ color: '#fff' }}>Pain Activity</StyledText>
+                <StyledText>Pain Activity</StyledText>
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings1')}>
@@ -107,7 +106,7 @@ export default class SettingsScreen extends React.Component {
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings2')}>
-              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor }}>
+              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor, backgroundColor: Colors.tintColor }}>
                 <Icon.Ionicons
                   size={32}
                   name={
@@ -115,9 +114,9 @@ export default class SettingsScreen extends React.Component {
                       ? 'ios-list'
                       : 'md-list'
                   }
-                  color={Colors.tintColor}
+                  color={'#fff'}
                   style={{ alignSelf: 'center' }} />
-                <StyledText>Medic Activity</StyledText>
+                <StyledText style={{ color: '#fff' }}>Medic Activity</StyledText>
               </View>
             </TouchableOpacity>
           </View>
@@ -127,11 +126,10 @@ export default class SettingsScreen extends React.Component {
           {
             pains.map((item) => (
               <ListItem
-                key={item.title}
+                key={item.medicine.registered_name}
                 style={{ flex: 1, width: '100%' }}
-                title={item.title}
-                subtitle={item.subtitle}
-                leftIcon={{ name: item.icon }}
+                title={item.medicine.registered_name}
+                subtitle={item.medicine.license_holder}
               />
             ))
           }

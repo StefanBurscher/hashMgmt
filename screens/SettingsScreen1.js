@@ -14,45 +14,48 @@ import axios from 'axios';
 import { Icon } from 'expo';
 import StyledText from '../components/StyledText';
 import Colors from '../constants/Colors';
+import PureChart from 'react-native-pure-chart';
 
 export default class SettingsScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      selectedPatient: '',
+      painHistory: [],
+      therapyHistory: [],
       patient: { full_name: '', icon: 'face' },
-      pains: []
-    }
+    };
   }
   static navigationOptions = {
-    title: 'Profile',
+    title: 'Profile - Chart',
   };
 
-  componentDidMount = async () => {
+  loading = async () => {
     const patientData = await AsyncStorage.getItem('patient');
     const patient = JSON.parse(patientData);
-    this.setState({ patient });
     axios.get('https://painpoint.herokuapp.com/api/pain-history?patient_id=' + patient.id)
       .then((resp) => {
-        let pains = [];
-        for (let i = 0; i < resp.data["pain-history"].length; i++) {
-          const element = resp.data["pain-history"][i];
-          pains.push({
-            ...element,
-            title: element.created_at + ' Pain level: ' + element.scale,
-            icon: 'face'
+        axios.get('https://painpoint.herokuapp.com/api/therapy-history?patient_id=' + patient.id)
+          .then((resp1) => {
+            this.setState({ painHistory: resp.data["pain-history"], therapyHistory: resp1.data["therapy-history"], selectedPatient: patient, patient })
           })
-        }
-        this.setState({ patient, pains });
-      })
-      .catch((err) => {
-        console.log(err);
       })
   }
 
+  componentDidMount = async () => {
+    this.loading();
+  }
 
   render() {
-    const { patient, pains } = this.state;
-    console.log(pains)
+    let data = [];
+    const { painHistory, patient } = this.state;
+    for (let i = 0; i < painHistory.length; i++) {
+      const element = painHistory[i];
+      data.push({
+        x: element.created_at.split(' ')[0],
+        y: Number(element.scale)
+      })
+    }
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <Card style={{ flexDirection: 'column' }}>
@@ -79,7 +82,7 @@ export default class SettingsScreen extends React.Component {
         <ScrollView style={styles.container}>
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings')}>
-              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor, backgroundColor: Colors.tintColor }}>
+              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor }}>
                 <Icon.Ionicons
                   size={32}
                   name={
@@ -87,13 +90,13 @@ export default class SettingsScreen extends React.Component {
                       ? 'ios-list'
                       : 'md-list'
                   }
-                  color={'#fff'}
+                  color={Colors.tintColor}
                   style={{ alignSelf: 'center' }} />
-                <StyledText style={{ color: '#fff' }}>Pain Activity</StyledText>
+                <StyledText style={{ color: '#000' }}>Pain Activity</StyledText>
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings1')}>
-              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor }}>
+              <View style={{ flex: 1, width: 100, height: 100, flexGrow: 1, alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 10, margin: 10, borderColor: Colors.tintColor, backgroundColor: Colors.tintColor }}>
                 <Icon.Ionicons
                   size={32}
                   name={
@@ -101,9 +104,9 @@ export default class SettingsScreen extends React.Component {
                       ? 'ios-analytics'
                       : 'md-analytics'
                   }
-                  color={Colors.tintColor}
+                  color={'#fff'}
                   style={{ alignSelf: 'center' }} />
-                <StyledText>Chart</StyledText>
+                <StyledText style={{ color: '#fff' }}>Chart</StyledText>
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings2')}>
@@ -121,21 +124,12 @@ export default class SettingsScreen extends React.Component {
               </View>
             </TouchableOpacity>
           </View>
-        </ScrollView >
+        </ScrollView>
 
-        <List style={{ flex: 1, width: '100%' }}>
-          {
-            pains.map((item) => (
-              <ListItem
-                key={item.title}
-                style={{ flex: 1, width: '100%' }}
-                title={item.title}
-                subtitle={item.subtitle}
-                leftIcon={{ name: item.icon }}
-              />
-            ))
-          }
-        </List>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+          <StyledText>Pain scale chart</StyledText>
+          <PureChart data={data} type='line' />
+        </ScrollView>
       </ScrollView >
     );
   }

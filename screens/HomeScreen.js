@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, ListItem } from 'react-native-elements'
+import { List, ListItem, Button } from 'react-native-elements'
 import {
   Image,
   Platform,
@@ -13,8 +13,9 @@ import {
 } from 'react-native';
 import { WebBrowser, Icon } from 'expo';
 
-import { MonoText } from '../components/StyledText';
+import StyledText from '../components/StyledText';
 import axios from 'axios';
+import Colors from '../constants/Colors';
 
 
 export default class HomeScreen extends React.Component {
@@ -58,7 +59,6 @@ export default class HomeScreen extends React.Component {
       })
   }
 
-
   goAddPatient = () => {
     this.props.navigation.navigate('AddPatient');
   }
@@ -73,63 +73,26 @@ export default class HomeScreen extends React.Component {
   render() {
     const list = this.state.patients;
     return (
-      <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={{ height: 20 }}></View>
-          <List style={{ flex: 1, width: '100%' }}>
-            {
-              list.map((item) => (
-                <TouchableOpacity key={item.title} onPress={() => this.selectPatient(item)}>
-                  <ListItem
-                    style={{ flex: 1, width: '100%' }}
-                    title={item.title}
-                    subtitle={item.subtitle}
-                    leftIcon={{ name: item.icon }}
-                  />
-                </TouchableOpacity>
-              ))
-            }
-          </List>
-          <TouchableOpacity onPress={this.goAddPatient}>
-            <Text>Add patient</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <List style={{ flex: 1, width: '100%' }}>
+          {
+            list.map((item) => (
+              <TouchableOpacity key={item.title} onPress={() => this.selectPatient(item)}>
+                <ListItem
+                  style={{ flex: 1, width: '100%' }}
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  leftIcon={{ name: item.icon }}
+                />
+              </TouchableOpacity>
+            ))
+          }
+        </List>
+        <View style={{ height: 20 }}></View>
+        <Button title="Add patient" large backgroundColor={Colors.tintColor} style={{ marginBottom: 10 }} borderRadius={30} onPress={this.goAddPatient} />
+      </ScrollView>
     );
   }
-
-  _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
-      const learnMoreButton = (
-        <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-          Learn more
-        </Text>
-      );
-
-      return (
-        <Text style={styles.developmentModeText}>
-          Development mode is enabled, your app will be slower but you can use useful development
-          tools. {learnMoreButton}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={styles.developmentModeText}>
-          You are not in development mode, your app will run at full speed.
-        </Text>
-      );
-    }
-  }
-
-  _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
-
-  _handleHelpPress = () => {
-    WebBrowser.openBrowserAsync(
-      'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-    );
-  };
 }
 
 const styles = StyleSheet.create({
@@ -145,7 +108,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   contentContainer: {
-    paddingTop: 30,
   },
   welcomeContainer: {
     alignItems: 'center',

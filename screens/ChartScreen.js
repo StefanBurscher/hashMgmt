@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, ListItem } from 'react-native-elements'
+import PureChart from 'react-native-pure-chart';
 import {
   AppRegistry,
   ImageBackground,
@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Button } from 'react-native-elements';
 import axios from 'axios';
+import StyledText from '../components/StyledText';
 
 export default class ChartScreen extends React.Component {
   constructor(props) {
@@ -23,39 +24,40 @@ export default class ChartScreen extends React.Component {
       painHistory: [],
       therapyHistory: []
     };
-    this.timeout = null;
   }
-  loading = async (prevState) => {
+  static navigationOptions = {
+    title: 'Chart',
+  };
+  loading = async () => {
     const patientData = await AsyncStorage.getItem('patient');
     const patient = JSON.parse(patientData);
-    if (patient.id !== prevState.selectedPatient.id) {
-      this.setState({ selectedPatient: JSON.parse(patientData) });
-    }
-    console.log(this.state.selectedPatient)
-    axios.get('https://painpoint.herokuapp.com/api/pain-history?patient_id=' + this.state.selectedPatient.id)
+    axios.get('https://painpoint.herokuapp.com/api/pain-history?patient_id=' + patient.id)
       .then((resp) => {
-        this.setState({ painHistory: resp.data["pain-history"] })
-      })
-    axios.get('https://painpoint.herokuapp.com/api/therapy-history?patient_id=' + this.state.selectedPatient.id)
-      .then((resp) => {
-        this.setState({ therapyHistory: resp.data["therapy-history"] })
+        axios.get('https://painpoint.herokuapp.com/api/therapy-history?patient_id=' + patient.id)
+          .then((resp1) => {
+            this.setState({ painHistory: resp.data["pain-history"], therapyHistory: resp1.data["therapy-history"], selectedPatient: patient })
+          })
       })
   }
 
   componentDidMount = async () => {
-    this.loading(this.state);
-  }
-
-  componentDidUpdate = async (prevProps, prevState) => {
-    if (this.state.selectedPatient.id !== prevState.selectedPatient.id) {
-      this.loading(prevState);
-    }
+    this.loading();
   }
 
   render() {
-    console.log(this.state)
+    let data = [];
+    const { painHistory } = this.state;
+    for (let i = 0; i < painHistory.length; i++) {
+      const element = painHistory[i];
+      data.push({
+        x: element.created_at.split(' ')[0],
+        y: Number(element.scale)
+      })
+    }
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <StyledText style={{ marginLeft: 20, marginRight: 20, fontSize: 18, marginBottom: 10 }}>Pain scale chart</StyledText>
+        <PureChart data={data} type='line' />
       </ScrollView>
     );
   }
